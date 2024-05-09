@@ -30,11 +30,18 @@ namespace UrlShortener.Services
                     CodeChars[i] = Alphabet[randomIndex];
                 }
 
+                try
+                {
                 string code = new string(CodeChars);
 
                 if (!await _dbcontext.ShortenedUrls.AnyAsync(x => x.Code == code))
                 {
                     return code;
+                }
+                }
+                catch(Exception ex) 
+                {
+                    throw new Exception(ex.Message, ex.InnerException);
                 }
             };
             
