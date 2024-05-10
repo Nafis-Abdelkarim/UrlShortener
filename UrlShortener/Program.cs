@@ -63,6 +63,8 @@ app.MapGet("api/{code}", async (string code, ApplicationDbContext dbContext) =>
 {
     var urlShortened = await dbContext.ShortenedUrls.FirstOrDefaultAsync(s => s.Code == code);
 
+    //TODO: Introducing cache with redis this can imporve the perofmance when system came to scale 
+
     if(urlShortened == null) return Results.NotFound();
 
     return Results.Redirect(urlShortened.LongUrl);
