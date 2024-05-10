@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UrlShortener;
 using UrlShortener.Entities;
@@ -12,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(builder.Configuration.GetConnectionString("dbConnection")));
+builder.Services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(builder.Configuration.GetConnectionString("UrlShortenerDbConnectionString")));
 
 builder.Services.AddScoped<UrlShortingService>();
 
@@ -55,6 +56,16 @@ app.MapPost("api/shorten", async (
     await dbContext.SaveChangesAsync();
 
     return Results.Ok(shortenedUrl.ShortUrl);
+});
+
+
+app.MapGet("api/{code}", async (string code, ApplicationDbContext dbContext) =>
+{
+    var urlShortened = await dbContext.ShortenedUrls.FirstOrDefaultAsync(s => s.Code == code);
+
+    if(urlShortened == null) return Results.NotFound();
+
+    return Results.Redirect(urlShortened.LongUrl);
 });
 
 
