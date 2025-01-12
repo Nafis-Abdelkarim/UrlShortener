@@ -17,7 +17,21 @@ builder.Services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(builder.
 
 builder.Services.AddScoped<UrlShortingService>();
 
+// Add CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000") // React app's URL
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
+
+// Use the CORS policy
+app.UseCors("AllowReactApp");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -29,11 +43,8 @@ if (app.Environment.IsDevelopment())
 }
 
 
-app.MapPost("api/shorten", async (
-    UrlShortnerRequest request,
-    UrlShortingService urlShortingService,
-    ApplicationDbContext dbContext,
-    HttpContext httpContext) =>
+
+app.MapPost("api/shorten", async (UrlShortnerRequest request, UrlShortingService urlShortingService, ApplicationDbContext dbContext, HttpContext httpContext) =>
 {
     if (!Uri.TryCreate(request.Url, UriKind.Absolute, out _))
     {
