@@ -82,5 +82,48 @@ namespace UrlShortener.UnitTests
             // Assert
             Assert.IsType<BadRequest<string>>(act.Result);
         }
+
+        [Fact]
+        public void CreateShortenUrl_ShouldReturnOk_WhenUrlIsInValide()
+        { 
+            // Arrange
+            UrlShortnerRequest request = new UrlShortnerRequest { Url = "https://www.example.com" };
+            using ApplicationDbContext context = GetDbContext(false);
+            var mockUrlShortingServiceMock = new Mock<UrlShortingService>(context);
+            //mockUrlShortingServiceMock.Setup(s => s.GenerateShortLink()).ReturnsAsync("aBc1723");
+
+            var mockHttpContext = new Mock<HttpContext>();
+            mockHttpContext.Setup(r => r.Request.Scheme).Returns("https");
+            mockHttpContext.Setup(r => r.Request.Host).Returns(new HostString("localhost"));    
+
+            // Act
+            var act = UrlEndpoints.CreateShortenUrl(request, mockUrlShortingServiceMock.Object, context, mockHttpContext.Object);
+
+            // Assert
+            Assert.IsType<Ok<string>>(act.Result);
+        }
+
+        //[Fact]
+        //public void CreateShortenUrl_ShouldRunAtLeastOnceUrlShortingService_WhenUrlIsInValide()
+        //{
+            
+        //    UrlShortnerRequest request = new UrlShortnerRequest { Url = "https://www.example.com" };
+        //    using ApplicationDbContext context = GetDbContext(false);
+        //    var mockUrlShortingServiceMock = new Mock<UrlShortingService>(context);
+        //    mockUrlShortingServiceMock.Setup(s => s.GenerateShortLink()).ReturnsAsync("aBc1723");
+
+        //    var mockHttpContext = new Mock<HttpContext>();
+        //    mockHttpContext.Setup(r => r.Request.Scheme).Returns("https");
+        //    mockHttpContext.Setup(r => r.Request.Host).Returns(new HostString("localhost"));    
+
+
+        //    var act = UrlEndpoints.CreateShortenUrl(request, mockUrlShortingServiceMock.Object, context, mockHttpContext.Object);
+
+
+        //    mockUrlShortingServiceMock.Verify(s => s.GenerateShortLink(), Times.Once);
+        //    Assert.IsType<Ok<string>>(act.Result);
+        //}
+
+
     }
 }
