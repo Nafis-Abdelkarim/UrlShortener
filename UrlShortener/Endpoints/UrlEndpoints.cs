@@ -17,14 +17,14 @@ namespace UrlShortener.Endpoints
             group.MapGet("{code}", GetShortenUrl);
         }
 
-        public static async Task<IResult> CreateShortenUrl(UrlShortnerRequest request, UrlShortingService urlShortingService, ApplicationDbContext dbContext, HttpContext httpContext)
+        public static async Task<IResult> CreateShortenUrl(UrlShortnerRequest request, IUrlShorting urlShorting, ApplicationDbContext dbContext, HttpContext httpContext)
         {
             if (!Uri.TryCreate(request.Url, UriKind.Absolute, out _))
             {
                 return Results.BadRequest("the specified url is invalide");
             }
 
-            string code = await urlShortingService.GenerateShortLink();
+            string code = await urlShorting.GenerateShortLink();
 
             var shortenedUrl = new ShortenedUrl
             {
