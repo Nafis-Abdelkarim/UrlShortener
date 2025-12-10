@@ -1,10 +1,7 @@
-using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using System;
-using System.Net.Http;
 using UrlShortener.Endpoints;
 using UrlShortener.Entities;
 using UrlShortener.Models;
@@ -81,6 +78,46 @@ namespace UrlShortener.UnitTests
             
             // Assert
             Assert.IsType<BadRequest<string>>(act.Result);
+        }
+
+        [Fact]
+        public void CreateShortenUrl_ShouldRunAtLeastOnceUrlShortingService_WhenUrlIsValide()
+        {
+            //Arrange
+            UrlShortnerRequest request = new UrlShortnerRequest { Url = "https://www.example.com" };
+            using ApplicationDbContext context = GetDbContext(false);
+            var mockUrlShortingServiceMock = new Mock<IUrlShorting>();
+            mockUrlShortingServiceMock.Setup(s => s.GenerateShortLink()).ReturnsAsync("QnB1X23");
+
+            var mockHttpContext = new Mock<HttpContext>();
+            mockHttpContext.Setup(r => r.Request.Scheme).Returns("https");
+            mockHttpContext.Setup(r => r.Request.Host).Returns(new HostString("localhost"));
+
+            //Act
+            var act = UrlEndpoints.CreateShortenUrl(request, mockUrlShortingServiceMock.Object, context, mockHttpContext.Object);
+
+            //Assert
+            mockUrlShortingServiceMock.Verify(s => s.GenerateShortLink(), Times.AtMostOnce);
+        }
+
+        [Fact]
+        public void CreateShortenUrl_ShouldReturnOk200_WhenUrlIsInValide()
+        {
+            // Arrange
+            UrlShortnerRequest request = new UrlShortnerRequest { Url = "https://www.example.com" };
+            using ApplicationDbContext context = GetDbContext(false);
+            var mockUrlShortingServiceMock = new Mock<UrlShortingService>(context);
+            //mockUrlShortingServiceMock.Setup(s => s.GenerateShortLink()).ReturnsAsync("aBc1723");
+
+            var mockHttpContext = new Mock<HttpContext>();
+            mockHttpContext.Setup(r => r.Request.Scheme).Returns("https");
+            mockHttpContext.Setup(r => r.Request.Host).Returns(new HostString("localhost"));
+
+            // Act
+            var act = UrlEndpoints.CreateShortenUrl(request, mockUrlShortingServiceMock.Object, context, mockHttpContext.Object);
+
+            // Assert
+            Assert.IsType<Ok<string>>(act.Result);
         }
     }
 }

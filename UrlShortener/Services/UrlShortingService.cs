@@ -2,7 +2,7 @@
 
 namespace UrlShortener.Services
 {
-    public class UrlShortingService
+    public class UrlShortingService : IUrlShorting
     {
         public const int NumberOfCharsInShortLink = 7;
 
