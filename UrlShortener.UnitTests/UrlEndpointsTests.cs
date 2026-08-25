@@ -39,33 +39,33 @@ namespace UrlShortener.UnitTests
         public UrlEndpointsTests() { }
 
         [Fact]
-        public void GetShortenUrl_ShouldReturnNotFound_WhenUrlShortenedIsNull()
+        public async Task GetShortenUrl_ShouldReturnNotFound_WhenUrlShortenedIsNull()
         {
             // Arrange
             using ApplicationDbContext context = GetDbContext(false);
 
             // Act
-            var act = UrlEndpoints.GetShortenUrl("Kri4on8", context);
+            var act = await UrlEndpoints.GetShortenUrl("Kri4on8", context);
 
             // Assert
-            Assert.IsType<NotFound>(act.Result);
+            Assert.IsType<NotFound>(act);
         }
 
         [Fact]
-        public void GetShortenUrl_ShouldReturnRedirectUrl_WhenUrlFound()
+        public async Task GetShortenUrl_ShouldReturnRedirectUrl_WhenUrlFound()
         {
             // Arrange 
             using ApplicationDbContext context = GetDbContext(true);
 
             // Act
-            var act = UrlEndpoints.GetShortenUrl("wliMs85", context);
+            var act = await UrlEndpoints.GetShortenUrl("wliMs85", context);
 
             // Assert
             Assert.NotNull(act);
         }
 
         [Fact]
-        public void CreateShortenUrl_ShouldReturnBadRequest_WhenUrlIsInValide()
+        public async Task CreateShortenUrl_ShouldReturnBadRequest_WhenUrlIsInValide()
         {
             // Arrange
             UrlShortnerRequest request = new UrlShortnerRequest { Url = "www.example" };
@@ -74,14 +74,14 @@ namespace UrlShortener.UnitTests
             var mockHttpContext = new Mock<HttpContext>();
 
             // Act
-            var act = UrlEndpoints.CreateShortenUrl(request, urlShortingService, context, mockHttpContext.Object);
+            var act = await UrlEndpoints.CreateShortenUrl(request, urlShortingService, context, mockHttpContext.Object);
             
             // Assert
-            Assert.IsType<BadRequest<string>>(act.Result);
+            Assert.IsType<BadRequest<string>>(act);
         }
 
         [Fact]
-        public void CreateShortenUrl_ShouldRunAtLeastOnceUrlShortingService_WhenUrlIsValide()
+        public async Task CreateShortenUrl_ShouldRunAtLeastOnceUrlShortingService_WhenUrlIsValide()
         {
             //Arrange
             UrlShortnerRequest request = new UrlShortnerRequest { Url = "https://www.example.com" };
@@ -94,14 +94,14 @@ namespace UrlShortener.UnitTests
             mockHttpContext.Setup(r => r.Request.Host).Returns(new HostString("localhost"));
 
             //Act
-            var act = UrlEndpoints.CreateShortenUrl(request, mockUrlShortingServiceMock.Object, context, mockHttpContext.Object);
+            var act = await UrlEndpoints.CreateShortenUrl(request, mockUrlShortingServiceMock.Object, context, mockHttpContext.Object);
 
             //Assert
             mockUrlShortingServiceMock.Verify(s => s.GenerateShortLink(), Times.AtMostOnce);
         }
 
         [Fact]
-        public void CreateShortenUrl_ShouldReturnOk200_WhenUrlIsInValide()
+        public async Task CreateShortenUrl_ShouldReturnOk200_WhenUrlIsInValide()
         {
             // Arrange
             UrlShortnerRequest request = new UrlShortnerRequest { Url = "https://www.example.com" };
@@ -114,10 +114,10 @@ namespace UrlShortener.UnitTests
             mockHttpContext.Setup(r => r.Request.Host).Returns(new HostString("localhost"));
 
             // Act
-            var act = UrlEndpoints.CreateShortenUrl(request, mockUrlShortingServiceMock.Object, context, mockHttpContext.Object);
+            var act = await UrlEndpoints.CreateShortenUrl(request, mockUrlShortingServiceMock.Object, context, mockHttpContext.Object);
 
             // Assert
-            Assert.IsType<Ok<string>>(act.Result);
+            Assert.IsType<Ok<string>>(act);
         }
     }
 }
